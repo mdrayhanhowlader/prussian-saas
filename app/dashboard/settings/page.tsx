@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import prisma from "@/app/lib/db";
 import {getKindeServerSession} from "@kinde-oss/kinde-auth-nextjs/server";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/app/components/Submitbuttons";
+import { revalidatePath } from "next/cache";
 
 
 async function getData(userId: string){
@@ -40,7 +42,8 @@ export default async function SettingPage (){
                 name: name ?? undefined,
                 colorScheme: colorScheme ?? undefined
             }
-        })
+        });
+        revalidatePath("/", "layout");
     }
     return (
         <div className="grid items-start gap-8">
@@ -103,7 +106,7 @@ export default async function SettingPage (){
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit">Save now</Button>
+                        <SubmitButton />
                     </CardFooter>
                 </form>
             </Card>
