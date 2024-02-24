@@ -3,6 +3,7 @@ import { DashboardNav } from "../components/DashboardNav";
 import {getKindeServerSession} from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import prisma from "../lib/db";
+import { stripe } from "../lib/stripe";
 
 async function getData({email, id, firstName, lastName, profileImage} : {email: string; id: string; firstName: string | undefined | null; lastName: string | undefined | null; profileImage: string | undefined | null;}){
     const user = await prisma.user.findUnique({
@@ -21,10 +22,21 @@ async function getData({email, id, firstName, lastName, profileImage} : {email: 
                 id: id,
                 email: email,
                 name: name,
-            }
-        })
-    }
-}
+            },
+        });
+    };
+    if(!user?.stripeCustomerId) {
+        const data = await stripe.customers.create({email: email,});
+        await prisma.user.update({
+            where: {
+                id: id,
+            },
+            data: {
+                stripeCustomerId: data.id,
+            },
+        });
+    };
+};
 
 export default async function DashboardLayout({children}:{children: ReactNode}){
     const {getUser} = getKindeServerSession();
