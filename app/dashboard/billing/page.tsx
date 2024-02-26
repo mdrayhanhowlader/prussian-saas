@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
+import prisma from "@/app/lib/db";
+import {getKindeServerSession} from "@kinde-oss/kinde-auth-nextjs/server";
+
 
 
 const featureItems = [
@@ -9,8 +12,31 @@ const featureItems = [
     {name: 'Lorem Ipsum Something'},
     {name: 'Lorem Ipsum Something'},
     {name: 'Lorem Ipsum Something'},
-]
-export default function BillingPage(){
+];
+
+async function getData(userId: string){
+    const data = await prisma.subscription.findUnique({
+        where: {
+            userId: userId,
+        },
+        select: {
+            status: true,
+            user: {
+                select: {
+                    stripeCustomerId: true,
+                },
+            },
+        },
+    });
+
+return data;
+}
+
+
+export default async function BillingPage(){
+    const {getUser} = getKindeServerSession();
+    const user = await getUser();
+    const data = await getData(user?.id as string);
     return (
         <div className="max-w-md mx-auto space-y-4">
             <Card className="flex flex-col">
